@@ -403,15 +403,6 @@ void PatchShunimpl()
 	}
 }
 
-// Where we need to close explorer silently (such as to block people from using awful, horrendous software...)
-void ExitExplorerSilently()
-{
-	// we do these blocks of code like this, so that the 0xc0000142 error doesn't appear
-	LPDWORD exitCode;
-	GetExitCodeProcess(L"explorer.exe", exitCode); // compiler warning is wrong here - the variable is supplied the exit code by this function
-	ExitProcess((UINT)exitCode); // exit explorer
-}
-
 // Initialize the inactive theme engine
 void ThemeHandlesInit()
 {
@@ -507,7 +498,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		CreateShellFolder(); // Fix shell folder for 1607+...
 		EnsureWindowColorization(); // Correct colorization enablement setting for Win10/11
 		FirstRunCompatibilityWarning(); // Warn users on Windows 11 24H2+ and Server 2022 of potential problems
-		FirstRunPrereleaseWarning(); // Warn users if this is a pre-release build that this is the case on first run ONLY
 		ThemeHandlesInit(); // Basically start the inactive theme management process
 
 		dbgprintf(L"Dll Attach\n");

@@ -428,34 +428,30 @@ void CreateShellFolder()
 }
 
 // Compatibility warning for Windows 11 24H2+
-void FirstRunCompatibilityWarning()
+void ExitExplorerSilently()
 {
-	if (g_osVersion.BuildNumber() >= 26100 || g_osVersion.BuildNumber() == 20348) // temporary one-off M2 warning for Win11 24H2 users, permanent for iron users
-	{
-		DWORD value = 0;
-		RegGetDWORD(HKEY_CURRENT_USER, c_szSubkey, L"FirstRunVersionCheck", &value);
-		if (value != 1)
-		{
-			MessageBoxW(NULL, L"This build of Windows is not currently supported.\n\nYou may encounter usability issues.", L"explorer7", MB_ICONEXCLAMATION);
-			DWORD newValue = 1;
-			RegSetDWORD(HKEY_CURRENT_USER, c_szSubkey, L"FirstRunVersionCheck", &newValue);
-		}
-	}
+	// we do these blocks of code like this, so that the 0xc0000142 error doesn't appear
+	LPDWORD exitCode;
+	GetExitCodeProcess(L"explorer.exe", exitCode); // compiler warning is wrong here - the variable is supplied the exit code by this function
+	ExitProcess((UINT)exitCode); // exit explorer
 }
 
-// One-off warning for pre-release version
-void FirstRunPrereleaseWarning()
+void FirstRunCompatibilityWarning()
 {
-#ifdef PRERELEASE_COPY // do nothing if this isn't defined
-	DWORD value = 0;
-	RegGetDWORD(HKEY_CURRENT_USER, c_szSubkey, L"FirstRunPrereleaseCheck", &value);
-	if (value != 1)
+	/* 
+	Specific SecondSystem case. 
+	We want to block 10+ from running explorer7 as this is the 8to7 release. but SecondSystem spoofs the build number as 10240 for Windows 10 compat and 22621 for Windows 11 compat so we have to keep those unblocked.
+	*/
+	if (g_osVersion.BuildNumber() > 10240 && g_osVersion.BuildNumber() < 22621)
 	{
-		MessageBoxW(NULL, L"Evaluation copy.\nFor testing purposes only.", L"explorer7", MB_ICONEXCLAMATION);
-		DWORD newValue = 1;
-		RegSetDWORD(HKEY_CURRENT_USER, c_szSubkey, L"FirstRunPrereleaseCheck", &newValue);
+			MessageBoxW(NULL, L"This build of Windows is not currently supported.", L"ex7forw81", MB_ICONEXCLAMATION);
+			ExitExplorerSilently();
+		
+	} else if (g_osVersion.BuildNumber() > 9900)
+	{
+		MessageBoxW(NULL, L"You are currently running an unsupported build of Windows, or you have SecondSystem enabled for explorer.exe\n\nHaving SecondSystem spoofing explorer.exe breaks stuff in Explorer7 so disable it with the context menu option.", L"ex7forw81", MB_ICONEXCLAMATION);
+		ExitExplorerSilently();
 	}
-#endif
 }
 
 // Ittr: The following 3 functions are here rather than any specific imports header because they are used by 2 different patch types
