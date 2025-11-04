@@ -5,9 +5,10 @@
 
 explorer7 is a **wrapper library** that allows Windows 7's explorer.exe to run properly on modern Windows versions, aiming to resurrect the original Windows 7 shell experience.
 
+This project was forked from [Explorer7 but I won't sue you](https://github.com/Win10to7/explorer7-but-i-wont-sue-you) and not regular Explorer7. This fork follows the GPLv3 license without the extra terms that are not compliant with the GPLv3 license.
 This fork was made to add specific changes for the Ex7forW8 option in the upcoming Windows 8 to 7 Transformation Pack update.
 
-## Known issues (Milestone 2 Update 3, last modified 2025-07-29)
+## Known issues (Milestone 2 Update 3, last modified 2025-11-04)
 These issues, unless specified to have been resolved in a later Windows version, are persistent across subsequent versions of Windows from their introduction.
 
 **MAKE SURE YOU READ THESE FIRST SO YOU ARE AWARE OF WHAT YOU ARE GETTING INTO!**
@@ -15,17 +16,8 @@ These issues, unless specified to have been resolved in a later Windows version,
 **Windows 8.1**
 - No proper strings are contained for the "Customize Start Menu" dialog (fixed system-wide in Windows 10).
 
-**Windows 10**
-- Autoplay does not work (1507+).
-- When ColorizationOptions is set to 0, system msstyles with the name "aero.msstyles" will result in the start menu and taskbar using the wrong color (1809+).
-- "Notification Area Icon" settings in Control Panel are missing (1507+).
-- The taskbar might overlap fullscreen applications whilst immersive shell is enabled (1507+).
-- If a user has StartIsBack++ installed, it may attempt to erroneously hook the shell, causing both visual and functional issues.
-
-**Windows 11**
-- BlurBehind colorization mode no longer works due to the removal of the relevant accent policy (22H2+).
-- Taskbar and start menu pin creation is broken due to an internal shell32.dll code logic change (24H2+, 23H2 January 2025 Update+).
-- Immersive shell support does not function correctly, and cannot launch applications (Insider 25H2+).
+**Windows 10+**
+- No support at all. A lot of code for it has been removed.
 
 **Windows 7 limitations/bugs**
 
@@ -134,8 +126,7 @@ These options are located under `HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\Cu
 | EnableImmersive | REG_DWORD | Controls the ability to run immersive applications in the system. When set to 0, immersive applications will not be able to run. | **0** |
 | StoreAppsInStart | REG_DWORD | When set to 0, immersive applications will be hidden from the All Programs list. | **1** |
 | StoreAppsOnTaskbar | REG_DWORD | When set to 0, specializations applied to load immersive application icons will not be applied, and pinned immersive applications will be hidden. | **0 (when EnableImmersive = 0)**, **1 (when EnableImmersive = 1)** |
-| ColorizationOptions | REG_DWORD | Controls shell colorization behaviour. Options 1 to 4 may have varying compatibility across Windows versions. | **1** |
-| AcrylicColorization | REG_DWORD | Controls acrylic colorization behaviour. Options 0-2 control the use of immersive colours, option 3 will use the regular colorization. | **0** |
+| ColorizationOptions | REG_DWORD | Controls shell colorization behaviour. Options 1 to 4 may have varying compatibility across Windows versions. | **0** |
 | OverrideAlpha | REG_DWORD | When set to 1, colorization alpha specified by DWM is overridden on the taskbar, start menu, and thumbnails. | **0** |
 | AlphaValue | REG_DWORD | For use alongside OverrideAlpha, to specify a 2-digit hex code for the colorization system to use. | **0x6B** |
 | UseTaskbarPinning | REG_DWORD | Determines whether taskbar pinning functionality is available to the user. When set to 0, pins will not be loaded and cannot be modified from jumplists. | **1** |
@@ -223,23 +214,6 @@ explorer7/
 
 **NOTE 3:** If you're looking to create high-quality orbs (32-bit bitmaps), you could use a tool to convert your images from other formats. Check out [Pixelformer](https://www.qualibyte.com/pixelformer/).
 
-## Development plan
-
-We're working based on a series of development milestones. Here's the planned development stages as things currently stand:
-
-|   Stage   | Goal | Status |
-| -------- | --------- | ------ |
-| Milestone 1 | Initial release focused on stability for Windows 8.1, and providing a starting point for Windows 10 support. |  |
-| Milestone 2 | - Achieving stability for Windows 10 and 11 (up to and including 23H2) <br> - Ensuring that behaviour on Windows 8.1 perfectly matches its predecessor. <br> - Providing more visually accurate interfaces (e.g. program list) <br> - Supporting older .msstyles <br> - Introducing immersive shell support <br> - Custom orb support | ✅ Completed |
-| Milestone 3 | Solving persistent bugs remaining on Windows 10 and 11. Likely to focus more on fixes and adjustments than new features. | ⏳ Work in progress |
-
-While this project is aimed at restoring Windows 7 explorer.exe functionality, some older explorer versions have been found to work with the wrapper. In the future, we plan to support some of these directly.  Here's the chart
-for support:
-
-| Version | Status |
-| ------- | ------ |
-| Windows 7 | ⏳ Work in progress |
-| Windows Vista | ❌ Not in active development |
 
 ## Minhook Linker errors
 
