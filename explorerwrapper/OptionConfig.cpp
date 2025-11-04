@@ -103,7 +103,7 @@ void InitializeConfiguration()
 		// Composited colorization options
 		// - In this case we default to Translucent (1)
 		// - This is because it is the only mode that works on every supported OS
-		DWORD dwColorizationOptions = 1;
+		DWORD dwColorizationOptions = 0;
 		g_registry.QueryValue(L"ColorizationOptions", (LPBYTE)&dwColorizationOptions, sizeof(DWORD));
 		if (dwColorizationOptions != 0 && dwColorizationOptions < 6)
 		{
@@ -112,17 +112,9 @@ void InitializeConfiguration()
 			// - Acrylic is not supported by Win32 API until RS4, so falls back to Translucent
 			// - BlurBehind, Acrylic, SolidColor are unsupported on 8.x, so falls back to Translucent
 			// - Otherwise, we apply the inputted value as the mode is supported on the OS
-			if (dwColorizationOptions == 2 && g_osVersion.BuildNumber() >= 22621)
+			if (dwColorizationOptions >= 2 && g_osVersion.BuildNumber() < 10074)
 			{
-				s_ColorizationOptions = 3;
-			}
-			else if (dwColorizationOptions == 3 && g_osVersion.BuildNumber() < 17134)
-			{
-				s_ColorizationOptions = 1;
-			}
-			else if (dwColorizationOptions >= 2 && g_osVersion.BuildNumber() < 10074)
-			{
-				s_ColorizationOptions = 1;
+				s_ColorizationOptions = 0;
 			}
 			else
 			{
