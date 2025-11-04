@@ -66,11 +66,6 @@ static void __fastcall CNscTree_ScaleAndSetIndent(__int64 a1)
 	int v6; // [rsp+38h] [rbp+10h] BYREF
 	int extraOffset = 0;
 
-	if (g_osVersion.BuildNumber() >= 26100 || (g_osVersion.BuildNumber() >= 22621 && g_osVersion.BuildRevision() >= 4111)) // Ittr: Handle windows 11 offset difference. Inefficient but simplified code wasnt working
-		extraOffset = 16;
-	else if (g_osVersion.BuildNumber() >= 21996)
-		extraOffset = 8;
-
 	v1 = *(DWORD*)(a1 + 0x1D0 + extraOffset);
 	SHComputeDPI(*(HWND*)(a1 + 0x188 + extraOffset), &v6, &nNumerator);
 	v3 = MulDiv(v1, nNumerator, 96);
@@ -80,11 +75,6 @@ static void __fastcall CNscTree_ScaleAndSetIndent(__int64 a1)
 static void __fastcall CNscTree_SetIndentValue(__int64 a1, int a2)
 {
 	int extraOffset = 0;
-
-	if (g_osVersion.BuildNumber() >= 26100 || (g_osVersion.BuildNumber() >= 22621 && g_osVersion.BuildRevision() >= 4111)) // Ittr: Handle windows 11 offset difference. Inefficient but simplified code wasnt working
-		extraOffset = 16;
-	else if (g_osVersion.BuildNumber() >= 21996)
-		extraOffset = 8;
 
 	*(DWORD*)(a1 + 0xA0 + extraOffset) = a2;
 	CNscTree_ScaleAndSetIndent(a1 - 304);
@@ -100,11 +90,6 @@ static void __fastcall CNscTree_ScaleAndSetRowHeight(__int64 a1)
 	int DeviceCaps; // edi
 	int v9; // eax
 	int extraOffset = 0;
-
-	if (g_osVersion.BuildNumber() >= 26100 || (g_osVersion.BuildNumber() >= 22621 && g_osVersion.BuildRevision() >= 4111)) // Ittr: Handle windows 11 offset difference. Inefficient but simplified code wasnt working
-		extraOffset = 16;
-	else if (g_osVersion.BuildNumber() >= 21996)
-		extraOffset = 8;
 
 	v1 = *(DWORD*)(a1 + 0x1C8 + extraOffset);
 	v2 = *(HWND*)(a1 + 0x188 + extraOffset);
@@ -134,11 +119,6 @@ static void __fastcall CNscTree_ScaleAndSetRowHeight(__int64 a1)
 static __int64 __fastcall CNscTree_SetItemHeight(__int64 a1, int a2)
 {
 	int extraOffset = 0;
-
-	if (g_osVersion.BuildNumber() >= 26100 || (g_osVersion.BuildNumber() >= 22621 && g_osVersion.BuildRevision() >= 4111)) // Ittr: Handle windows 11 offset difference. Inefficient but simplified code wasnt working
-		extraOffset = 16;
-	else if (g_osVersion.BuildNumber() >= 21996)
-		extraOffset = 8;
 
 	*(DWORD*)(a1 + 200 + extraOffset) = a2;
 	CNscTree_ScaleAndSetRowHeight(a1 - 256);

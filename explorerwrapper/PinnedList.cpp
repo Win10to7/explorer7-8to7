@@ -7,18 +7,15 @@ CPinnedListWrapper::CPinnedListWrapper(IUnknown* flex, int build)
 	m_build = build;
 	if (build >= 10240 && build < 14393)
 	{
-		m_pinnedList25 = (IPinnedList25*)flex;
-		dbgprintf(L"using IPinnedList25");
+		dbgprintf(L"Windows 10 build :(");
 	}
 	else if (build >= 14393 && build < 17763)
 	{
-		m_flexList = (IFlexibleTaskbarPinnedList*)flex;
-		dbgprintf(L"using IFlexibleTaskbarPinnedList");
+		dbgprintf(L"Windows 10 build :(");
 	}
 	else if (build >= 17763)
 	{
-		m_pinnedList3 = (IPinnedList3*)flex;
-		dbgprintf(L"using IPinnedlist3");
+		dbgprintf(L"Windows 10 build :(");
 	}
 }
 
