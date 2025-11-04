@@ -5,29 +5,7 @@
 
 explorer7 is a **wrapper library** that allows Windows 7's explorer.exe to run properly on modern Windows versions, aiming to resurrect the original Windows 7 shell experience.
 
-
-This fork was made due to repeated GPLv3 violations by the [original repository owner](https://github.com/marp/win10-to-win7-transformation-pack/issues/3) [Archive](https://web.archive.org/web/20251030151550/https://github.com/marp/win10-to-win7-transformation-pack/issues/3) [2](https://files.catbox.moe/oxl8r9.png)
-
-This fork acts as a drop-in replacement for Explorer7. Upstream is treated with minimal trust, therefore commits from upstream and the dependencies owned by ittrgrey are reviewed to avoid supply-chain attacks.
-<details>
-  <summary>Screenshots</summary>
-
-<p align=center>
-TBD
-  <br>
-    <i>The start menu in the default view.</i>
-  <br>
-TBD
-  <br>
-    <i>The start menu in the programs view.</i>
-  <br>
-TBD
-  <br>
-    <i>The taskbar jumplist and tray overflow.</i>
-  <br>
-</p>
-
-</details>
+This fork was made to add specific changes for the Ex7forW8 option in the upcoming Windows 8 to 7 Transformation Pack update.
 
 ## Known issues (Milestone 2 Update 3, last modified 2025-07-29)
 These issues, unless specified to have been resolved in a later Windows version, are persistent across subsequent versions of Windows from their introduction.
