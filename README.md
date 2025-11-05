@@ -1,11 +1,12 @@
 <p align=center>
-  <img src="https://github.com/user-attachments/assets/eea4492b-9637-4f43-9f88-7a5df14d35ef" />
+  <img src="https://github.com/user-attachments/assets/37d35d8a-7f7f-479c-a5ca-e8ebaafa2b59" />
 </p>
 
 
 explorer7 is a **wrapper library** that allows Windows 7's explorer.exe to run properly on modern Windows versions, aiming to resurrect the original Windows 7 shell experience.
 
-This project was forked from [Explorer7 but I won't sue you](https://github.com/Win10to7/explorer7-but-i-wont-sue-you) and not regular Explorer7. This fork follows the GPLv3 license without the extra terms that are not compliant with the GPLv3 license.
+**This project was forked from [Explorer7 but I won't sue you](https://github.com/Win10to7/explorer7-but-i-wont-sue-you) and not regular Explorer7. This fork follows the GPLv3 license without the extra terms that are not compliant with the GPLv3 license.**
+
 This fork was made to add specific changes for the Ex7forW8 option in the upcoming Windows 8 to 7 Transformation Pack update.
 
 ## Known issues (Milestone 2 Update 3, last modified 2025-11-04)
