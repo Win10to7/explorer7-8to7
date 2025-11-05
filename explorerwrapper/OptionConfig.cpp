@@ -6,15 +6,11 @@
 // - To create a new definition, you must define it here and in OptionConfig.h
 bool s_ClassicTheme;
 bool s_DisableComposition;
-int s_EnableImmersiveShellStack;
 bool s_UseTaskbarPinning;
-bool s_ShowStoreAppsOnTaskbar;
 bool s_ShowStoreAppsInStart;
-int s_AcrylicAlt;
 int s_ColorizationOptions;
 bool s_OverrideAlpha;
 DWORD s_AlphaValue;
-bool s_UseDCompFlyouts;
 
 // This is called at the beginning of the library's execution
 // The format for each setting is generally:
@@ -25,25 +21,6 @@ bool s_UseDCompFlyouts;
 //	-> Otherwise, the default value specified with the DWORD init is set
 void InitializeConfiguration()
 {
-	// Immersive shell stack for modern apps (e.g. PC settings)
-	// - Defaults to disabled (0)
-	// - Pending stability improvements before default enablement
-	DWORD dwEnableUWP = 0;
-	if (g_osVersion.BuildNumber() >= 10074 && g_osVersion.BuildNumber() < 27686) // Note: Immersive is currently buggy in 27686 and later
-	{
-		// Immersive shell can only be enabled on TH1 onwards
-		// Consolidate the check to here so we don't have to do double comparisons elsewhere in the software
-		// In other words, this is more efficient
-		g_registry.QueryValue(L"EnableImmersive", (LPBYTE)&dwEnableUWP, sizeof(DWORD));
-	}
-#ifndef PRERELEASE_COPY
-	if (dwEnableUWP == 2) // mode 2 is for debugging only, not release builds!
-	{
-		dwEnableUWP = 0; // change to fully disabled state as though 2 doesn't exist
-	}
-#endif
-	s_EnableImmersiveShellStack = dwEnableUWP;
-
 	// Taskbar pinning
 	// - Defaults to enabled (1)
 	// - When disabled, the behaviour is similar to Vista and earlier
@@ -51,19 +28,12 @@ void InitializeConfiguration()
 	DWORD dwTaskbarPinning = 1;
 	g_registry.QueryValue(L"UseTaskbarPinning", (LPBYTE)&dwTaskbarPinning, sizeof(DWORD));
 	s_UseTaskbarPinning = dwTaskbarPinning;
-
-	// Store apps on taskbar
-	// - Defaults to the same value used by immersive stack
-	// - Only has an effect when UWP is enabled, otherwise this is always off
-	DWORD dwStoreAppsOnTaskbar = s_EnableImmersiveShellStack;
-	g_registry.QueryValue(L"StoreAppsOnTaskbar", (LPBYTE)&dwStoreAppsOnTaskbar, sizeof(DWORD));
-	s_ShowStoreAppsOnTaskbar = dwStoreAppsOnTaskbar;
 	
 	// Enable modern apps in start menu programs list
 	// - Defaults to enabled (1)
 	// - Only applies on RS1 onwards, TH2 and earlier use the native program list
 	// - When disabled, the behaviour is similar to 8.1 and earlier
-	DWORD dwStoreAppsInStart = 1;
+	DWORD dwStoreAppsInStart = 0;
 	g_registry.QueryValue(L"StoreAppsInStart", (LPBYTE)&dwStoreAppsInStart, sizeof(DWORD));
 	s_ShowStoreAppsInStart = dwStoreAppsInStart;
 
@@ -95,8 +65,6 @@ void InitializeConfiguration()
 	// - Otherwise, we use composited colorization option set...
 	if (g_osVersion.BuildNumber() >= 27858 && g_osVersion.BuildNumber() < 27891)
 	{
-		// Note: Non-acrylic effects are broken in some recent Canary builds, so prevent usage
-		s_ColorizationOptions = 3;
 	}
 	else
 	{
@@ -135,18 +103,4 @@ void InitializeConfiguration()
 	DWORD dwAlphaValue = 0x6B;
 	g_registry.QueryValue(L"AlphaValue", (LPBYTE)&dwAlphaValue, sizeof(DWORD));
 	s_AlphaValue = dwAlphaValue;
-	
-	// Select appropriate acrylic style to use
-	// - Defaults to regular (0)
-	// - Only used when ColorizationOptions = 3
-	DWORD dwAcrylicAlt = 0;
-	g_registry.QueryValue(L"AcrylicColorization", (LPBYTE)&dwAcrylicAlt, sizeof(DWORD));
-	s_AcrylicAlt = dwAcrylicAlt;
-
-	// DComp flyouts
-	// - Defaults to the same value used by immersive stack
-	// - Only has an effect when UWP is enabled, otherwise this is always off
-	DWORD dwUseDCompFlyouts = s_EnableImmersiveShellStack;
-	g_registry.QueryValue(L"UseDCompFlyouts", (LPBYTE)&dwUseDCompFlyouts, sizeof(DWORD));
-	s_UseDCompFlyouts = dwUseDCompFlyouts;
 }

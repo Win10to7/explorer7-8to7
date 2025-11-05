@@ -124,20 +124,6 @@ void LoadCurrentTheme(HWND hwnd, LPCWSTR pszClassList)
 }
 
 // Ittr: Forcing this change fixes colorization on aero.msstyles for 1809+ on taskbar and start menu ONLY.
-void EnsureWindowColorization()
-{
-	if (g_osVersion.BuildNumber() >= 17763)
-	{
-		DWORD value = 0; // initialise in memory
-		DWORD colorVal = 1; // doesn't work when reduced to a single string, annoying but atleast we can use it here
-		RegGetDWORD(HKEY_CURRENT_USER, sz_DesktopWindowManagerKey, L"EnableWindowColorization", &value); // output the data from attributes key...
-
-		if (value != colorVal) // basically if the attribute value doesn't exist or is the wrong value...
-		{
-			RegSetDWORD(HKEY_CURRENT_USER, sz_DesktopWindowManagerKey, L"EnableWindowColorization", &colorVal); // apply folder attributes, arguably the most important part
-		}
-	}
-}
 
 DWORD GetColorizationColor()
 {
@@ -158,47 +144,15 @@ DWORD GetColorizationColor()
 		a = 0x74;
 	}
 
-	// mode 4 (gradient non-transparent is buggy) + current thumbnail edge case 
-	if (s_ColorizationOptions == 4) 
-	{
-		a = 0xFF;
-	}
-
-	if (s_ColorizationOptions == 3)
-	{
-		GetThemeName = (GetThemeName_t)GetProcAddress(LoadLibrary(L"uxtheme.dll"), (LPSTR)74);
-		RefreshImmersiveColorPolicyState = (RefreshImmersiveColorPolicyState_t)GetProcAddress(LoadLibrary(L"uxtheme.dll"), (LPSTR)104);
-		GetIsImmersiveColorUsingHighContrast = (GetIsImmersiveColorUsingHighContrast_t)GetProcAddress(LoadLibrary(L"uxtheme.dll"), (LPSTR)106);
-		GetUserColorPreference = (GetUserColorPreference_t)GetProcAddress(LoadLibrary(L"uxtheme.dll"), (LPSTR)120);
-		GetColorFromPreference = (GetColorFromPreference_t)GetProcAddress(LoadLibrary(L"uxtheme.dll"), (LPSTR)121);
-	}
-
 	IMMERSIVE_COLOR_TYPE imclr;
 
-	switch (s_AcrylicAlt)
-	{
-		case 1:
-			imclr = IMCLR_SystemAccentDark2;
-			break;
-		case 2:
-			imclr = IMCLR_SystemAccentLight2;
-			break;
-		default:
-			imclr = IMCLR_HardwareGutterRest;
-			break;
-	}
 
-	DWORD color = (s_ColorizationOptions != 3 || s_AcrylicAlt == 3) ? ((a << 24) | (b << 16) | (g << 8) | r) : ((s_OverrideAlpha ? ((s_AlphaValue & 0xFF) << 24) : 0xCC000000) | (CImmersiveColor::GetColor(imclr) & 0xFFFFFF));
+	DWORD color = (s_ColorizationOptions != 3) ? ((a << 24) | (b << 16) | (g << 8) | r) : ((s_OverrideAlpha ? ((s_AlphaValue & 0xFF) << 24) : 0xCC000000) | (CImmersiveColor::GetColor(imclr) & 0xFFFFFF));
 	return color;
 }
 
 ACCENT_STATE GetAccentState(bool isThumbnail)
 {
-	if (s_ColorizationOptions == 3) // acrylic (1803-)
-		return ACCENT_ENABLE_ACRYLICBLURBEHIND;
-	else if (s_ColorizationOptions == 2) // blurbehind (1507 until 11 21h2)
-		return ACCENT_ENABLE_BLURBEHIND;
-
 	if (isThumbnail) // run this block after the other ones, to ensure that pseudo-aero mode uses opaque thumbnail. using the option definition causes extreme visual bugs for some reason.
 		return ACCENT_ENABLE_GRADIENT;
 
@@ -378,29 +332,6 @@ void CrashError()
 	MessageBoxW(NULL, errorText, errorTitle, MB_ICONERROR); // the actual error box lol
 }
 
-// Create all programs shellfolder on 1607+ where it doesn't already exist
-void CreateShellFolder()
-{
-	//addendum: using the regular HKLM location is not viable for non-administrator users so we store in HKCU, which causes it to turn up in HKEY_USERS somewhere. 
-	//this shouldn't work, but it does :P
-	if (g_osVersion.BuildNumber() >= 14393) // Ittr: byebye shellfolder.reg
-	{
-		DWORD value = 0; // initialise in memory
-		DWORD attrVal = 0x28100000; // doesn't work when reduced to a single string, annoying but atleast we can use it here
-		RegGetDWORD(HKEY_CURRENT_USER, sz_ShellFolder3, L"Attributes", &value); // output the data from attributes key...
-
-		if (value != attrVal) // basically if the attribute value doesn't exist or is the wrong value...
-		{
-			// we create all the relevant values. issue solved for new users - program list works out of the box now
-			RegSetSZ(HKEY_CURRENT_USER, sz_ShellFolder, NULL, (DWORD*)L"Programs Folder and Fast Items"); // create clsid name
-			RegSetExpandSZ(HKEY_CURRENT_USER, sz_ShellFolder2, NULL, (DWORD*)L"%SystemRoot%\\system32\\shell32.dll"); // point it to shell32
-			RegSetSZ(HKEY_CURRENT_USER, sz_ShellFolder2, L"ThreadingModel", (DWORD*)L"Apartment"); // regular threading model criteria...
-			RegSetDWORD(HKEY_CURRENT_USER, sz_ShellFolder3, L"Attributes", &attrVal); // apply folder attributes, arguably the most important part
-		}
-	}
-}
-
-
 void ExitExplorerSilently()
 {
 	// we do these blocks of code like this, so that the 0xc0000142 error doesn't appear
@@ -423,7 +354,7 @@ void FirstRunCompatibilityWarning()
 		
 	} else if (g_osVersion.BuildNumber() > 9900)
 	{
-		MessageBoxW(NULL, L"You are currently running an unsupported build of Windows, or you have SecondSystem enabled for explorer.exe\n\nHaving SecondSystem spoofing explorer.exe breaks stuff in Explorer7 so disable it with the context menu option.", L"ex7forw81", MB_ICONEXCLAMATION);
+		MessageBoxW(NULL, L"You are currently using an unsupported version of Windows, or you have SecondSystem enabled for explorer.exe.\n\nEnabling SecondSystem spoofing for explorer.exe may cause issues in Explorer7, so please disable it using the context menu option.", L"ex7forw81", MB_ICONEXCLAMATION);
 		ExitExplorerSilently();
 	}
 }
@@ -443,49 +374,12 @@ HWND WINAPI CreateWindowInBandNew(DWORD dwExStyle,
 	LPVOID lpParam,
 	DWORD dwBand)
 {
-	if (s_EnableImmersiveShellStack == 1) // immersive enabled
-	{
-		DWORD p0 = (DWORD)_ReturnAddress();
-		dwExStyle = dwExStyle | WS_EX_TOOLWINDOW; // TODO is this needed?
-		HWND ret = CreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hwndParent, hMenu, hInstance, lpParam);
-
-		// Ittr: Emulate always-on-top behaviour for Windows 10 toasts
-		BOOL excludeFromPeek = true;
-		WCHAR className[MAX_PATH];
-		GetClassName(ret, className, ARRAYSIZE(className));
-		if (lstrcmp(className, L"Windows.UI.Core.CoreWindow") == 0 || lstrcmp(className, L"Shell_Dialog") == 0 || lstrcmp(className, L"Shell_Dim") == 0)
-		{
-			SetWindowPos(ret, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREPOSITION);
-		}
-
-		// We do this to eliminate the ghost window
-		BOOL shouldCloak = true;
-		WCHAR titleBuffer[MAX_PATH];
-		GetClassName(ret, titleBuffer, ARRAYSIZE(titleBuffer));
-		if (lstrcmp(titleBuffer, L"ApplicationFrameWindow") == 0)
-		{
-			DwmSetWindowAttribute(ret, DWMWA_CLOAK, &shouldCloak, sizeof(shouldCloak));
-		}
-
-		dbgprintf(L"CREATEWINDOWINBANDNEW %i", dwBand);
-
-		if (ret)
-		{
-			SetProp(ret, L"UIA_WindowVisibilityOverriden", (HANDLE)2);
-			SetProp(ret, L"explorer7.WindowBand", (HANDLE)dwBand);
-		}
-		
-		return ret;
-	}
-	else // Preserve legacy codepath for Windows 8.1 and non-immersive users
-	{
 		DWORD p0 = (DWORD)_ReturnAddress();
 		dwStyle = dwStyle | WS_EX_TOOLWINDOW;
 		HWND ret = CreateWindowInBandOrig(dwExStyle, (LPWSTR)lpClassName, (PVOID)lpWindowName, (PVOID)dwStyle, (PVOID)x, (PVOID)y, (PVOID)nWidth, (PVOID)nHeight, hwndParent, hMenu, hInstance, lpParam, dwBand & 1);
 		dbgprintf(L"%p: CreateWindowInBand %p %s %p %p %p %p %p %p %p %p %p %p %p = %p %p", p0, dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hwndParent, hMenu, hInstance, lpParam, dwBand, ret, GetLastError());
 		SetProp(ret, L"explorer7.WindowBand", (HANDLE)dwBand);
 		return ret;
-	}
 }
 
 HWND WINAPI CreateWindowInBandExNew(DWORD exStyle, LPWSTR szClassName, PVOID p3, PVOID p4, PVOID p5, PVOID p6, PVOID p7, PVOID p8, PVOID p9, PVOID p10, PVOID p11, PVOID p12, DWORD p13, DWORD dwTypeFlags)

@@ -75,11 +75,6 @@ LRESULT CALLBACK NewTrayProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	if (uMsg == WM_THEMECHANGED)
-	{
-		EnsureWindowColorization(); // Ittr: Correct colorization enablement setting for Win10/11
-	}
-
 	if (uMsg == WM_SETTINGCHANGE || uMsg == WM_ERASEBKGND || uMsg == WM_WININICHANGE) // Ittr: Fix taskbar colorization for non-legacy
 	{
 		if ((IsThemeActive() && !s_ClassicTheme && IsCompositionActive() && !s_DisableComposition) && hwnd == GetTaskbarWnd() && s_ColorizationOptions != 0) // Ittr: Only taskbar needs updating now, start menu and new thumbnail algo correct for themselves
@@ -357,16 +352,13 @@ void HookImmersive()
 	HMODULE hUser32 = GetModuleHandle(L"user32.dll");
 	CreateWindowInBandOrig = (CreateWindowInBandAPI)GetProcAddress(hUser32, "CreateWindowInBand");
 
-	if (s_EnableImmersiveShellStack == 1)
-		CreateWindowInBandExOrig = (CreateWindowInBandExAPI)GetProcAddress(hUser32, "CreateWindowInBand");
-
 	GetWindowBandOrig = (GetWindowBandAPI)GetProcAddress(hUser32, "GetWindowBand");
 	ChangeImportedAddress(immersiveui, "user32.dll", CreateWindowInBandOrig, CreateWindowInBandNew);
 	ChangeImportedAddress(immersiveui, "user32.dll", GetWindowBandOrig, GetWindowBandNew);
 	ChangeImportedAddress(immersiveui, "user32.dll", GetUserObjectInformation, GetUserObjectInformationNew);
 	ChangeImportedAddress(immersiveui, "user32.dll", SetTimer, SetTimer_WUI);
 
-	if (!s_EnableImmersiveShellStack || g_osVersion.BuildNumber() < 10074) // Ittr: If user *either* has UWP disabled, or they are NOT on Windows 10, run legacy window band code
+	if (g_osVersion.BuildNumber() < 10074) // Ittr: If user *either* has UWP disabled, or they are NOT on Windows 10, run legacy window band code
 	{
 		//bugbug!!!
 		ChangeImportedAddress(GetModuleHandle(L"twinui.dll"), "user32.dll", CreateWindowInBandOrig, CreateWindowInBandNew);
@@ -479,8 +471,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		if (GetFileAttributesW((LPCWSTR)blacklistPath) != INVALID_FILE_ATTRIBUTES) // Windowblinds blockage part 1 - create user-facing error
 			CrashError(); // The user-facing crash message - we do these blocks of code like this, so that the 0xc0000142 error doesn't appear
 
-		CreateShellFolder(); // Fix shell folder for 1607+...
-		EnsureWindowColorization(); // Correct colorization enablement setting for Win10/11
 		FirstRunCompatibilityWarning(); // Warn users on Windows 11 24H2+ and Server 2022 of potential problems
 		ThemeHandlesInit(); // Basically start the inactive theme management process
 
@@ -545,10 +535,6 @@ extern "C" HRESULT WINAPI Explorer_CoCreateInstance(
 	{
 		dbgprintf(L"create Metro before tray\n");
 		HookImmersive();
-
-		if (s_EnableImmersiveShellStack == 1) // Ittr: Only create TWinUI UWP mode here if we are going to use it
-			CreateTwinUI_UWP();
-
 	}
 	if (rclsid == CLSID_RegTreeOptions && riid == IID_IRegTreeOptions7) //upgrading RegTreeOptions interface
 	{
@@ -593,16 +579,11 @@ extern "C" HRESULT WINAPI Explorer_CoCreateInstance(
 		{
 			int build = g_osVersion.BuildNumber();
 			IID iid = IID_IStartMenuItemsCache8;
-			if (build >= 14393)
-				iid = IID_IStartMenuItemsCache10;
 
 			void* newcache = nullptr;
 			CoCreateInstance(rclsid, pUnkOuter, dwClsContext, iid, &newcache);
 
 			CStartMenuResolver* resolver7 = nullptr;
-			if (build >= 14393)
-				resolver7 = new CStartMenuResolver((IStartMenuItemsCache10*)newcache);
-			else
 				resolver7 = new CStartMenuResolver((IStartMenuItemsCache8*)newcache);
 
 			result = resolver7->QueryInterface(riid, ppv);
@@ -614,15 +595,6 @@ extern "C" HRESULT WINAPI Explorer_CoCreateInstance(
 	{
 		int build = g_osVersion.BuildNumber();
 		IID id = IID_IPinnedList25;
-
-		if (build >= 14393 && build < 17763)
-		{
-			id = IID_IFlexibleTaskbarPinnedList;
-		}
-		else if (build >= 17763)
-		{
-			id = IID_IPinnedList3;
-		}
 
 		{
 			result = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, id, ppv);
@@ -702,7 +674,7 @@ extern "C" HRESULT WINAPI Explorer_CoRegisterClassObject(
 	if (rclsid == CLSID_TrayNotify)
 	{
 		pUnk = new CTrayNotifyFactory((IClassFactory*)pUnk);
-		if (g_osVersion.BuildNumber() < 10074 || s_EnableImmersiveShellStack == 2) // Ittr: gate fakeimmersive to 8.1 due to functional issues (e.g. hanging) with 10 - restoring this on 10 is now seemingly unnecessary
+		if (g_osVersion.BuildNumber() < 10074) // Ittr: gate fakeimmersive to 8.1 due to functional issues (e.g. hanging) with 10 - restoring this on 10 is now seemingly unnecessary
 		{
 			//register immersive shell fake too
 			RegisterFakeImmersive();
@@ -723,7 +695,7 @@ extern "C" HRESULT WINAPI Explorer_CoRevokeClassObject(DWORD dwRegister)
 {
 	if (dwRegister == dwRegisterNotify)
 	{
-		if (g_osVersion.BuildNumber() < 10074 || s_EnableImmersiveShellStack == 2) // Ittr: gate fakeimmersive to 8.1 due to functional issues (e.g. hanging) with 10
+		if (g_osVersion.BuildNumber() < 10074) // Ittr: gate fakeimmersive to 8.1 due to functional issues (e.g. hanging) with 10
 		{
 			UnregisterFakeImmersive();
 			UnregisterProjection();

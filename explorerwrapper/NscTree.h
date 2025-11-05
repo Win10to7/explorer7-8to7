@@ -150,8 +150,6 @@ static HRESULT __fastcall CNSCHost_FillNSC(uintptr_t nscHost) //todo: reimplemen
 
 		if (g_osVersion.BuildNumber() < 14393) // handle TH1 and TH2 - less explorerframe modding exists, so should be fine
 		{
-			privatec->SetIndentValue(indentValue);
-			visualProps->SetItemHeight(itemHeight);
 		}
 		else
 		{

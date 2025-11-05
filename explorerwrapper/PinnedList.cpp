@@ -156,21 +156,16 @@ HRESULT __stdcall CPinnedListWrapper::GetAppIDForPinnedItem(PCIDLIST_ABSOLUTE p1
 	bool bHideImmersivePidl = false;
 
 	// Only bother running the filtering code if the option to show store applications on the taskbar is disabled
-	if (!s_ShowStoreAppsOnTaskbar)
-	{
 		ITEMIDLIST_ABSOLUTE* pidlApplicationFolder;
 		if (SUCCEEDED(SHGetKnownFolderIDList(FOLDERID_AppsFolder, KF_FLAG_DONT_VERIFY, nullptr, &pidlApplicationFolder)))
 		{
 			bHideImmersivePidl = ILIsParent(pidlApplicationFolder, p1, TRUE);
 		}
 		CoTaskMemFree(pidlApplicationFolder);
-	}
 
 	// Cause the interface to intentionally fail if pinning is disabled or in the cases where immersive items should be hidden
-	if (!s_UseTaskbarPinning || bHideImmersivePidl)
-	{
 		return E_NOINTERFACE;
-	}
+
 
 	// Pass through to the appropriate PinnedList interface for the user's version of Windows
 	if (m_pinnedList25)

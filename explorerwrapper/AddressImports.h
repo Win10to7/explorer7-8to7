@@ -137,9 +137,6 @@ UINT WINAPI SetErrorModeNEW(UINT uMode)
 {
 	SetCurrentProcessExplicitAppUserModelID(L"Microsoft.Windows.Explorer");
 
-	if (s_EnableImmersiveShellStack == 1)
-		CreateTwinUI_UWP();
-
 	return SetErrorMode(uMode);
 }
 
@@ -231,20 +228,6 @@ void PatchShell32()
 // Import address changes for user32.dll modulename
 void PatchUser32()
 {
-	if (g_osVersion.BuildNumber() >= 10074)
-	{
-		// Update overflow positioning to account for OS changes if the user is using TH1 or higher
-		ChangeImportedAddress(GetModuleHandle(NULL), "user32.dll", GetProcAddress(GetModuleHandle(L"user32.dll"), (LPSTR)"CalculatePopupWindowPosition"), CalculatePopupWindowPositionNEW);
-
-		// Ensure as much as we can that immersive menus are gone, if the pattern code isn't enough, e.g. Win11 Cobalt.
-		// Only applied to shell32, as application to ExplorerFrame breaks the program list hover behaviour.
-		HMODULE shell32 = GetModuleHandle(L"shell32.dll");
-		if (shell32)
-		{
-			ChangeImportedAddress(shell32, "user32.dll", SystemParametersInfoW, SystemParametersInfoWNEW);
-		}
-	}
-
 	// Load functions needed for task enumeration hook
 	HMODULE user32 = LoadLibrary(L"user32.dll");
 	IsShellFrameWindow = (IsShellWindow_t)GetProcAddress(user32, (LPCSTR)2573);
