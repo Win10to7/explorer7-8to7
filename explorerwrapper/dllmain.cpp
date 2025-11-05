@@ -456,20 +456,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved)
 {
-	// Ittr: We initialise values for closing program if incompatible software is present
-	WCHAR programPath[MAX_PATH] = L"\\Stardock\\WindowBlinds 11\\unins000.exe";
-	WCHAR blacklistPath[MAX_PATH];
-	ExpandEnvironmentStringsW(L"%ProgramFiles%", (LPWSTR)blacklistPath, sizeof(blacklistPath));
-	lstrcat(blacklistPath, programPath);
-
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
 	{
 		PatchShunimpl();
-
-		if (GetFileAttributesW((LPCWSTR)blacklistPath) != INVALID_FILE_ATTRIBUTES) // Windowblinds blockage part 1 - create user-facing error
-			CrashError(); // The user-facing crash message - we do these blocks of code like this, so that the 0xc0000142 error doesn't appear
 
 		FirstRunCompatibilityWarning(); // Warn users on Windows 11 24H2+ and Server 2022 of potential problems
 		ThemeHandlesInit(); // Basically start the inactive theme management process
@@ -505,10 +496,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 			ChangeImportedAddress(GetModuleHandle(L"alttab.dll"), "user32.dll", CreateWindowInBandOrig, CreateWindowInBandNew);
 			g_alttabhooked = TRUE;
 		}
-
-		if (GetFileAttributes((LPCWSTR)blacklistPath) != INVALID_FILE_ATTRIBUTES) // Windowblinds blockage part 2 - actually stops the program from running
-			ExitExplorerSilently(); //byebye WB users
-
 	}
 	break;
 	case DLL_THREAD_DETACH:
