@@ -161,8 +161,6 @@ ULONG STDMETHODCALLTYPE CTrayNotifyWrapper::Release(void)
 HRESULT STDMETHODCALLTYPE CTrayNotifyWrapper::RegisterCallback(IUnknown* p1,ULONG* p2)
 {
 	*p2 = 0;
-	if (g_osVersion.BuildNumber() >= 10240)
-		return S_OK;
 	//INotificationCB* cb;
 	//p1->QueryInterface(IID_PPV_ARGS(&cb));
 	return m_notify7->RegisterCallback(p1);

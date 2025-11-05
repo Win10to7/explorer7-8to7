@@ -5,18 +5,6 @@
 CPinnedListWrapper::CPinnedListWrapper(IUnknown* flex, int build)
 {
 	m_build = build;
-	if (build >= 10240 && build < 14393)
-	{
-		dbgprintf(L"Windows 10 build :(");
-	}
-	else if (build >= 14393 && build < 17763)
-	{
-		dbgprintf(L"Windows 10 build :(");
-	}
-	else if (build >= 17763)
-	{
-		dbgprintf(L"Windows 10 build :(");
-	}
 }
 
 CPinnedListWrapper::~CPinnedListWrapper()

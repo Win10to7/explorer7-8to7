@@ -300,17 +300,6 @@ void ModifyDesktopHwnd()
 void HookShell32();
 void HookAPIs() // largely a legacy function now
 {
-	// 24H2+ - W32PTP
-	if (g_osVersion.BuildNumber() >= 26100)
-	{
-		HMODULE twinui_pcshell = LoadLibrary(L"twinui.pcshell.dll");
-
-		if (twinui_pcshell)
-		{
-			CTaskbandPin_CreateInstance = (CTaskbandPin_CreateInstance_t)FindPattern((uintptr_t)twinui_pcshell, "40 53 48 83 EC 20 48 8B D9 48 8D 15 ?? ?? ?? ?? B9 80 00 00 00 E8 ?? ?? ?? ?? 48 85 C0");
-		}
-	}
-
 	// Change and fix core desktop components
 	hEvent_DesktopVisible = CreateEvent(NULL, TRUE, FALSE, L"ShellDesktopVisibleEvent");
 	SHCreateDesktopOrig = (SHCreateDesktopAPI)GetProcAddress(GetModuleHandle(L"shell32.dll"), (LPSTR)200);
@@ -490,11 +479,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		if (GetFileAttributesW((LPCWSTR)blacklistPath) != INVALID_FILE_ATTRIBUTES) // Windowblinds blockage part 1 - create user-facing error
 			CrashError(); // The user-facing crash message - we do these blocks of code like this, so that the 0xc0000142 error doesn't appear
 
-		/*if (g_osVersion.BuildNumber() >= 26100)
-		{
-			InitPinnedListHack();
-		}*/
-
 		CreateShellFolder(); // Fix shell folder for 1607+...
 		EnsureWindowColorization(); // Correct colorization enablement setting for Win10/11
 		FirstRunCompatibilityWarning(); // Warn users on Windows 11 24H2+ and Server 2022 of potential problems
@@ -556,12 +540,6 @@ extern "C" HRESULT WINAPI Explorer_CoCreateInstance(
 {
 	HRESULT result;
 	result = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
-
-	if (rclsid == CLSID_PersonalStartMenu && riid == IID_IShellItemFilter && result != S_OK && g_osVersion.BuildNumber() >= 10074) //Ittr: as far as im aware doesnt cause crashing on 1507/11. needs further checking when im awake
-	{
-		auto shellItemFilter = new CStartMenuItemFilter();
-		result = shellItemFilter->QueryInterface(riid, ppv);
-	}
 
 	if (rclsid == CLSID_SysTray) //create Metro before tray
 	{
@@ -646,19 +624,6 @@ extern "C" HRESULT WINAPI Explorer_CoCreateInstance(
 			id = IID_IPinnedList3;
 		}
 
-		//if (rclsid == CLSID_TaskbarPin && CTaskbandPin_CreateInstance && build >= 26100) // Windows 11...
-		//{
-		//	CTaskbandPin_W32PTP* pTaskbandPin;
-		//	result = CTaskbandPin_CreateInstance(&pTaskbandPin);
-		//	dbgprintf(L"CTaskbandPin_CreateInstance result: %p", result);
-		//	if (SUCCEEDED(result))
-		//	{
-		//		result = ((IUnknown*)pTaskbandPin)->QueryInterface(id, ppv);
-		//		dbgprintf(L"CTaskbandPin_CreateInstance result 2: %p", result);
-		//		((IUnknown*)pTaskbandPin)->Release();
-		//	}
-		//}
-		//else
 		{
 			result = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, id, ppv);
 		}
@@ -711,8 +676,6 @@ extern "C" HRESULT WINAPI Explorer_CoCreateInstance(
 		else
 		{
 			IID dk = IID_IShutdownChoices8;
-			if (build >= 10074)
-				dk = IID_IShutdownChoices10;
 
 			result = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, dk, ppv);
 			if (*ppv)

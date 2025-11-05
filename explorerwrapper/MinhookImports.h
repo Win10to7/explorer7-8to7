@@ -248,7 +248,6 @@ void FixNonImmersivePniDui()
 
 				if (_ShowFlyout) // first run, VB to NI
 				{
-					MH_CreateHook(static_cast<LPVOID>(_ShowFlyout), CPniMainDlg_ShowFlyoutNEW, reinterpret_cast<LPVOID*>(&CPniMainDlg_ShowFlyout));
 				}
 				else
 				{
@@ -256,7 +255,6 @@ void FixNonImmersivePniDui()
 
 					if (_ShowFlyout) // second run, RS4 to TI
 					{
-						MH_CreateHook(static_cast<LPVOID>(_ShowFlyout), CPniMainDlg_ShowFlyoutNEW, reinterpret_cast<LPVOID*>(&CPniMainDlg_ShowFlyout));
 					}
 					else
 					{
@@ -264,7 +262,6 @@ void FixNonImmersivePniDui()
 
 						if (_ShowFlyout) // third run, TH2 to RS3
 						{
-							MH_CreateHook(static_cast<LPVOID>(_ShowFlyout), CPniMainDlg_ShowFlyoutNEW, reinterpret_cast<LPVOID*>(&CPniMainDlg_ShowFlyout));
 						}
 						else
 						{
@@ -272,7 +269,6 @@ void FixNonImmersivePniDui()
 
 							if (_ShowFlyout) // fourth run, TH1
 							{
-								MH_CreateHook(static_cast<LPVOID>(_ShowFlyout), CPniMainDlg_ShowFlyoutNEW, reinterpret_cast<LPVOID*>(&CPniMainDlg_ShowFlyout));
 							}
 						}
 					}
@@ -289,43 +285,6 @@ void UpdateTrayWindowDefinitions()
 	void* _IsWindowNotDesktopOrTray = (void*)FindPattern((uintptr_t)GetModuleHandle(0), "48 89 5C 24 ?? 57 48 83 EC ?? 48 8B F9 33 DB FF 15 ?? ?? ?? ?? 3B C3 74 ?? 48 3B 3D");
 	MH_CreateHook(static_cast<LPVOID>(_ShouldAddWindowToTray), ShouldAddWindowToTray, reinterpret_cast<LPVOID*>(&_ShouldAddWindowToTray));
 	MH_CreateHook(static_cast<LPVOID>(_IsWindowNotDesktopOrTray), IsWindowNotDesktopOrTray, reinterpret_cast<LPVOID*>(&_IsWindowNotDesktopOrTray));
-}
-
-void SetProgramListNscTreeAttributes()
-{
-	// If we are on Windows 10 or higher, query the original program list pattern and create our hook to fix the visual issues
-	if (g_osVersion.BuildNumber() >= 10074)
-	{
-		CNSCHost_FillNSCOg = (decltype(CNSCHost_FillNSCOg))FindPattern((uintptr_t)GetModuleHandle(0), "48 89 5C 24 18 57 48 83 EC 30 33 DB 48 8B F9 39 99 CC 00 00 00");
-		if (CNSCHost_FillNSCOg)
-			MH_CreateHook(static_cast<LPVOID>(CNSCHost_FillNSCOg), CNSCHost_FillNSC, reinterpret_cast<LPVOID*>(&CNSCHost_FillNSCOg)); //this hook is in nsctree.h now
-	}
-}
-
-void HandleThumbnailColorization()
-{
-	// CTaskListThumbnailWnd::_Render
-	// Thumbnail rendering fix for colorization modes
-	if (g_osVersion.BuildNumber() >= 10074) // we don't apply to 8.1 as only pseudo-aero is supported there
-	{
-		char* CTaskListThumbnailWnd_Render = "48 8B C4 48 89 58 08 48 89 68 10 48 89 70 20 44 89 40 18 57 41 54 41 55 41 56 41 57 48 81 EC 90 00 00 00 48 8B F9";
-		void* CTLWRPattern = (void*)FindPattern((uintptr_t)GetModuleHandle(NULL), CTaskListThumbnailWnd_Render);
-
-		if (CTLWRPattern)
-		{
-			MH_CreateHook(static_cast<LPVOID>(CTLWRPattern), RenderThumbnail, reinterpret_cast<LPVOID*>(&renderThumbnail_orig));
-		}
-		else // 7779 and 7785
-		{
-			CTaskListThumbnailWnd_Render = "48 89 5C 24 18 55 56 57 41 54 41 55 41 56 41 57 48 8D 6C 24 D9 48 81 EC A0 00 00 00 48 8B 05 ?? ?? 04 00 48 33 C4";
-			CTLWRPattern = (void*)FindPattern((uintptr_t)GetModuleHandle(NULL), CTaskListThumbnailWnd_Render);
-
-			if (CTLWRPattern)
-			{
-				MH_CreateHook(static_cast<LPVOID>(CTLWRPattern), RenderThumbnail, reinterpret_cast<LPVOID*>(&renderThumbnail_orig));
-			}
-		}
-	}
 }
 
 void RenderStoreAppsOnTaskbar()
@@ -452,7 +411,6 @@ void _OnHShellTaskMan()
 
 			if (XLOSHMPattern) // NI, GE
 			{
-				MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 			}
 			else
 			{
@@ -461,7 +419,6 @@ void _OnHShellTaskMan()
 
 				if (XLOSHMPattern) // CO
 				{
-					MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 				}
 				else
 				{
@@ -470,7 +427,6 @@ void _OnHShellTaskMan()
 
 					if (XLOSHMPattern) // VB
 					{
-						MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 					}
 					else
 					{
@@ -479,7 +435,6 @@ void _OnHShellTaskMan()
 
 						if (XLOSHMPattern) // RS5, 19H1
 						{
-							MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 						}
 						else
 						{
@@ -488,7 +443,6 @@ void _OnHShellTaskMan()
 
 							if (XLOSHMPattern) // RS4
 							{
-								MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 							}
 							else
 							{
@@ -497,7 +451,6 @@ void _OnHShellTaskMan()
 
 								if (XLOSHMPattern) // RS3
 								{
-									MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 								}
 								else
 								{
@@ -506,7 +459,6 @@ void _OnHShellTaskMan()
 
 									if (XLOSHMPattern) // RS2
 									{
-										MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 									}
 									else
 									{
@@ -531,7 +483,6 @@ _OnHShellTaskMan_TWINUI:
 
 				if (XLOSHMPattern) // RS1
 				{
-					MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 				}
 				else
 				{
@@ -540,7 +491,6 @@ _OnHShellTaskMan_TWINUI:
 
 					if (XLOSHMPattern) // TH2
 					{
-						MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 					}
 					else
 					{
@@ -552,7 +502,6 @@ _OnHShellTaskMan_TWINUI:
 
 						if (XLOSHMPattern) // TH1
 						{
-							MH_CreateHook(static_cast<LPVOID>(XLOSHMPattern), OnShellHookMessage_Hook, reinterpret_cast<LPVOID*>(&XLOSHMPattern));
 
 							if (CILOSHMPattern) // Second stage for Server SKUs that use legacy CImmersiveLauncher
 							{
@@ -573,8 +522,6 @@ void ChangeMinhookImports()
 	SetUpThemeManager(); // Local visual style management init
 	FixNonImmersivePniDui(); // Non-immersive network flyout handling
 	UpdateTrayWindowDefinitions(); // Ensure tray exclusion is corrected for modern Windows
-	SetProgramListNscTreeAttributes(); // Restore the relevant contents to the program list
-	HandleThumbnailColorization(); // Thumbnail colorization to match
 	RenderStoreAppsOnTaskbar(); // UWP icon rendering for the taskbar
 	CreateImmersiveShell(); // Immersive shell initialisation
 	_OnHShellTaskMan(); // Handling the immersive shell's impacts on the holographic shell and associated ShellHook messages

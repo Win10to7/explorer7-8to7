@@ -115,22 +115,7 @@ void HookShell32()
 	ChangeImportedAddress(GetModuleHandle(0),"shell32.DLL", GetProcAddress(shell32, "ILIsEqual"), ILIsEqualNEW);
 
 	uintptr_t Win32PinCheck = FindPattern((uintptr_t)shell32, "41 8B E9 49 8B F0 48 8B DA 48 8B F9 48 8D 0D ?? ?? ?? ?? E8");
-	if (g_osVersion.BuildNumber() >= 19041 && g_osVersion.BuildNumber() < 26100)
-	{
-		if (Win32PinCheck)
-		{
-			dbgprintf(L"Win32PinCheck %i", Win32PinCheck);
-			Win32PinCheck += 19;
-			uint8_t* bytes = (uint8_t*)(Win32PinCheck + 5 + *reinterpret_cast<int32_t*>(Win32PinCheck + 1));
-			DWORD old;
-			VirtualProtect(bytes, 3, PAGE_EXECUTE_READWRITE, &old);
-			bytes[0] = 0xB0;
-			bytes[1] = 0x00;
-			bytes[2] = 0xC3;
-			VirtualProtect(bytes, 3, old, 0);
-		}
-		else // Microsoft added a new signature for this in later 23H2 updates
-		{
+
 			uintptr_t Win32PinCheck2 = FindPattern((uintptr_t)shell32, "45 8B F1 49 8B F0 48 8B DA 48 8B F9 48 8D 0D ?? ?? ?? ?? E8");
 
 			if (Win32PinCheck2)
@@ -145,8 +130,6 @@ void HookShell32()
 				bytes[2] = 0xC3;
 				VirtualProtect(bytes, 3, old, 0);
 			}
-		}
-	}
 	
 	dbgprintf(L"6\n");
 }

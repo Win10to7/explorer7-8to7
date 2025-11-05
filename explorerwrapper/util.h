@@ -152,12 +152,6 @@ DWORD GetColorizationColor()
 	int g = (colors.ColorizationColor >> 8) & 0xFF;
 	int b = (colors.ColorizationColor) & 0xFF;
 
-	// thanks to microsoft we have to account for automatic colorization being bugged on 10+ as alpha is set to 0. Yay...
-	if (g_osVersion.BuildNumber() >= 10074 && s_ColorizationOptions != 3 && a == 0x00 && (r != 0x00 || g != 0x00 || b != 0x00)) // only apply if it appears that the user is trying to set an actual colour - full transparency remains possible!
-	{
-		a = 0xC4; // we default to this as it's used by the majority of win10/11 default colours
-	}
-
 	// Approximate default Windows 8.1 translucency if user has regular 10/11 colours used and has not manually set to 0xC4
 	if (a == 0xC4)
 	{
@@ -168,12 +162,6 @@ DWORD GetColorizationColor()
 	if (s_ColorizationOptions == 4) 
 	{
 		a = 0xFF;
-	}
-
-	// Windows 10 and 11 users specifically without glass tools may struggle to adjust color opacity, this optional override fixes this
-	if (s_OverrideAlpha && (s_ColorizationOptions == 1 || s_ColorizationOptions == 2))
-	{
-		a = (s_AlphaValue) & 0xFF;
 	}
 
 	if (s_ColorizationOptions == 3)
@@ -230,21 +218,6 @@ __forceinline WINDOWCOMPOSITIONATTRIBDATA GetTrayAccentProperties(bool isThumbna
 	// - 0x200 is then added to with extra to ensure that blurbehind mode takes in color properly
 	// - we then define gradient color by pulling either DWM accent color or immersive color as applicable
 	// this is then passed into attribute data which we call back into whenever we need to get accent properties without retyping this whole function
-
-	if (g_osVersion.BuildNumber() >= 21996 && s_ColorizationOptions == 3) // Acrylic colorization misbehaves on 11. Removing 0x2 flag fixes this
-	{
-		WINDOWCOMPOSITIONATTRIBDATA attrData;
-		ACCENT_POLICY accentPolicy;
-
-		accentPolicy.AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND;
-		accentPolicy.AccentFlags = (isThumbnail) ? (0x1 | 0x200) : (0x11); // very important that this is set up like this!
-		accentPolicy.GradientColor = GetColorizationColor();
-
-		attrData.Attrib = WCA_ACCENT_POLICY;
-		attrData.pvData = &accentPolicy;
-		attrData.cbData = sizeof(accentPolicy);
-		return attrData;
-	}
 
 	WINDOWCOMPOSITIONATTRIBDATA attrData;
 	ACCENT_POLICY accentPolicy;
@@ -427,7 +400,7 @@ void CreateShellFolder()
 	}
 }
 
-// Compatibility warning for Windows 11 24H2+
+
 void ExitExplorerSilently()
 {
 	// we do these blocks of code like this, so that the 0xc0000142 error doesn't appear
@@ -436,6 +409,7 @@ void ExitExplorerSilently()
 	ExitProcess((UINT)exitCode); // exit explorer
 }
 
+// Compatibility error for Windows 10+
 void FirstRunCompatibilityWarning()
 {
 	/* 
