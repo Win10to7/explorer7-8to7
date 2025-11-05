@@ -151,37 +151,6 @@ BOOL WINAPI IsCompositionActiveNEW()
 	return IsCompositionActive();
 }
 
-// Apply relevant Win8-era theme classes if they're defined
-HRESULT WINAPI SetWindowThemeNEW(HWND hwnd, LPCWSTR pszSubAppName, LPCWSTR pszSubIdList)
-{
-	if (IsThemeClassDefined(g_currentTheme, L"ShowDesktop8", L"Button", 0))
-	{
-		if (lstrcmp(pszSubAppName, L"VerticalShowDesktop") == 0)
-		{
-			return SetWindowTheme(hwnd, L"VerticalShowDesktop8", pszSubIdList);
-		}
-
-		if (lstrcmp(pszSubAppName, L"ShowDesktop") == 0)
-		{
-			return SetWindowTheme(hwnd, L"ShowDesktop8", pszSubIdList);
-		}
-	}
-
-	// We don't check here because, unlike ShowDesktop::Button, there is no inherited fallback class
-	// In other words, it already falls back to the 7-era class if required
-	if (hwnd == GetThumbnailWnd() && (lstrcmp(pszSubAppName, L"Vertical") != 0) && IsCompositionActiveNEW()) // updated thumbnail classes misbehave without DWM
-	{
-		return SetWindowTheme(hwnd, L"W8", pszSubIdList);
-	}
-
-	if (hwnd == GetThumbnailWnd() && (lstrcmp(pszSubAppName, L"Vertical") == 0) && IsCompositionActiveNEW())
-	{
-		return SetWindowTheme(hwnd, L"W8Vertical", pszSubIdList);
-	}
-
-	return SetWindowTheme(hwnd, pszSubAppName, pszSubIdList);
-}
-
 // Disable composition where appropriate
 HRESULT WINAPI DwmIsCompositionEnabledNEW(BOOL* pfEnabled)
 {
@@ -304,9 +273,6 @@ void PatchUxTheme()
 
 	// Disable DWM composition as quickly as we can (if registry key set)
 	ChangeImportedAddress(GetModuleHandle(NULL), "uxtheme.dll", IsCompositionActive, IsCompositionActiveNEW);
-
-	// Change show desktop button for Windows 8-based themes
-	ChangeImportedAddress(GetModuleHandle(NULL), "uxtheme.dll", SetWindowTheme, SetWindowThemeNEW);
 }
 
 // Import address changes for dwmapi.dll modulename
