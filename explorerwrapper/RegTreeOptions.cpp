@@ -36,7 +36,7 @@ ULONG __stdcall CRegTreeOptionsWrapper::Release(void)
 HRESULT __stdcall CRegTreeOptionsWrapper::InitTree(HWND hWnd, HKEY hKey, LPCSTR lpSubKey, LPCSTR lpValueName)
 {
 	if (StrCmpA(lpSubKey, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartMenu\\StartPanel") == 0)
-		return regtree->InitTree(hWnd, hKey, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartMenu\\StartPanel7", lpValueName);
+		return regtree->InitTree(hWnd, hKey, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartMenu\\StartPanelEx7", lpValueName);
 	return regtree->InitTree(hWnd, hKey, lpSubKey, lpValueName);
 }
 
