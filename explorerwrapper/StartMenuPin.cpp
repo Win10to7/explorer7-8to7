@@ -241,7 +241,7 @@ void StartMenuPin_PatchShell32()
 	ChangeImportedAddress(h_shell32,"api-ms-win-core-libraryloader-l1-2-0.dll",GetProcAddress(GetModuleHandle(L"kernelbase.dll"),"LoadStringW"),Shell32_LoadString);
 	ChangeImportedAddress(GetModuleHandle(0), "shell32.dll", GetProcAddress(GetModuleHandle(L"shell32.dll"), "IsProcessAnExplorer"), IsProcessAnExplorerHook);
 
-	DWORD_PTR addr = FindPattern((uintptr_t)h_shell32, "48 85 C0 0F 85 ?? ?? ?? ?? 45 8B C5 4C 8D 15 ?? ?? ?? ??");
+	DWORD_PTR addr = FindPattern((uintptr_t)h_shell32, "48 85 C0 0F 85 ?? ?? ?? ?? 45 8B ?? 4C 8D 15 ?? ?? ?? ??");
 	if (addr)
 		addr += 15;
 	else
